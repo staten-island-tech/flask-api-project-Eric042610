@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <title>First 150 Pokémon</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <meta charset="UTF-8">
+  <title>FBI Most Wanted</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="container">
-    <h1>First 150 Pokémon</h1>
+    <h1>FBI Most Wanted</h1>
     <div class="card-container">
-      {% for pokemon in pokemons %}
-      <a href="{{ url_for('pokemon_detail', id=pokemon.id) }}" class="card-link">
+      {% for person in wanted %}
+      <a href="{{ url_for('wanted_detail', uid=person.uid) }}" class="card-link">
         <div class="card">
-          <img src="{{ pokemon.image }}" alt="{{ pokemon.name }}" />
+          <img src="{{ person.image }}" alt="{{ person.name }}">
           <div class="card-body">
-            <h5 class="card-title">{{ pokemon.name }}</h5>
-            <p class="card-text">ID: {{ pokemon.id }}</p>
+            <h5 class="card-title">{{ person.name }}</h5>
+            <p class="card-text">UID: {{ person.uid }}</p>
           </div>
         </div>
       </a>

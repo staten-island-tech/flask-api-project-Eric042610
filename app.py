@@ -2,60 +2,39 @@ from flask import Flask, render_template
 import requests
 
 app = Flask(__name__)
-
-POKEMON_API_URL = "https://pokeapi.co/api/v2/pokemon"
+FBI_API_URL = "https://api.fbi.gov/wanted/v1/list"
+cached_people = []  # Store fetched people for quick UID lookup
 
 @app.route("/")
 def index():
+    global cached_people
     try:
-        response = requests.get(f"{POKEMON_API_URL}?limit=150")
+        response = requests.get(FBI_API_URL, params={"page": 1})
         response.raise_for_status()
         data = response.json()
-        pokemon_list = data['results']
+        people = data.get("items", [])
 
-        pokemons = []
-        for pokemon in pokemon_list:
-            url = pokemon['url']
-            id = url.strip("/").split("/")[-1]
-            # Use official artwork
-            image_url = f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{id}.png"
-            pokemons.append({
-                'name': pokemon['name'].capitalize(),
-                'id': id,
-                'image': image_url
+        wanted_list = []
+        for person in people:
+            wanted_list.append({
+                "name": person.get("title", "Unknown"),
+                "uid": person.get("uid"),
+                "details": person.get("details", ""),
+                "reward_text": person.get("reward_text", ""),
+                "image": person.get("images", [{}])[0].get("original", "/static/placeholder.jpg")
             })
 
-        return render_template("index.html", pokemons=pokemons)
+        cached_people = wanted_list  # Store for later lookup
+        return render_template("index.html", wanted=wanted_list)
     except requests.RequestException as e:
-        return f"Error fetching Pokémon data: {e}", 500
+        return f"Error fetching FBI data: {e}", 500
 
-@app.route("/pokemon/<int:id>")
-def pokemon_detail(id):
-    try:
-        response = requests.get(f"{POKEMON_API_URL}/{id}")
-        response.raise_for_status()
-        data = response.json()
+@app.route("/wanted/<uid>")
+def wanted_detail(uid):
+    person = next((p for p in cached_people if p["uid"] == uid), None)
+    if not person:
+        return "Person not found", 404
+    return render_template("detail.html", person=person)
 
-        types = [t['type']['name'].capitalize() for t in data['types']]
-        height = data.get('height')
-        weight = data.get('weight')
-        name = data.get('name').capitalize()
-        image_url = f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{id}.png"
-        stat_names = [stat['stat']['name'].capitalize() for stat in data['stats']]
-        stat_values = [stat['base_stat'] for stat in data['stats']]
-
-        return render_template("pokemon.html", pokemon={
-            'name': name,
-            'id': id,
-            'image': image_url,
-            'types': types,
-            'height': height,
-            'weight': weight,
-            'stat_names': stat_names,
-            'stat_values': stat_values
-        })
-    except requests.RequestException as e:
-        return f"Error fetching Pokémon detail: {e}", 500
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
