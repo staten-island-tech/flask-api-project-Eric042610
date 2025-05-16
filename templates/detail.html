@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ person.name }} - Details</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="container">
     <h1>{{ person.name }}</h1>
-    <div class="pokemon-detail">
-      <img src="{{ person.image }}" alt="{{ person.name }}">
+    <div class="detail-section">
+      <img src="{{ person.image }}" alt="Image of {{ person.name }}">
       <p><strong>UID:</strong> {{ person.uid }}</p>
       <p><strong>Details:</strong> {{ person.details }}</p>
-      <p><strong>Reward:</strong> {{ person.reward_text or "No reward listed" }}</p>
+      <p><strong>Reward:</strong> {{ person.reward_text or 'No reward listed' }}</p>
     </div>
-    <p><a href="{{ url_for('index') }}">← Back to list</a></p>
+    <a href="{{ url_for('index') }}" class="back-link">← Back to list</a>
   </div>
 </body>
 </html>

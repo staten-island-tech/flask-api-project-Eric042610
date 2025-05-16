@@ -1,9 +1,8 @@
 from flask import Flask, render_template
 import requests
-
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', template_folder='templates')
 FBI_API_URL = "https://api.fbi.gov/wanted/v1/list"
-cached_people = []  # Store fetched people for quick UID lookup
+cached_people = []
 
 @app.route("/")
 def index():
@@ -11,22 +10,21 @@ def index():
     try:
         response = requests.get(FBI_API_URL, params={"page": 1})
         response.raise_for_status()
-        data = response.json()
-        people = data.get("items", [])
+        people = response.json().get("items", [])
 
         wanted_list = []
         for person in people:
             wanted_list.append({
                 "name": person.get("title", "Unknown"),
                 "uid": person.get("uid"),
-                "details": person.get("details", ""),
+                "details": person.get("details", "No details available."),
                 "reward_text": person.get("reward_text", ""),
                 "image": person.get("images", [{}])[0].get("original", "/static/placeholder.jpg")
             })
 
-        cached_people = wanted_list  # Store for later lookup
+        cached_people = wanted_list
         return render_template("index.html", wanted=wanted_list)
-    except requests.RequestException as e:
+    except Exception as e:
         return f"Error fetching FBI data: {e}", 500
 
 @app.route("/wanted/<uid>")
