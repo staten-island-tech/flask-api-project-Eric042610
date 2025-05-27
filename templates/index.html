@@ -2,13 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FBI Most Wanted</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="container">
     <h1>FBI Most Wanted</h1>
+
+    <form method="get" action="{{ url_for('index') }}" style="text-align: center; margin-bottom: 30px;">
+      <input type="text" name="search" placeholder="Search by name..." value="{{ search_query or '' }}" style="padding: 8px; width: 300px;">
+      <button type="submit" style="padding: 8px;">Search</button>
+    </form>
+
     <div class="card-container">
       {% for person in wanted %}
       <a href="{{ url_for('wanted_detail', uid=person.uid) }}" class="card-link">
@@ -16,7 +21,9 @@
           <img src="{{ person.image }}" alt="Image of {{ person.name }}">
           <div class="card-body">
             <div class="card-title">{{ person.name }}</div>
-            <div class="card-text">UID: {{ person.uid }}</div>
+            <div class="card-text">
+              {{ person.reward_text if person.reward_text else "No reward listed" }}
+            </div>
           </div>
         </div>
       </a>

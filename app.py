@@ -1,38 +1,47 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import requests
-app = Flask(__name__, static_folder='static', template_folder='templates')
+
+app = Flask(__name__)
 FBI_API_URL = "https://api.fbi.gov/wanted/v1/list"
 cached_people = []
+
+def format_person(person):
+    return {
+        "name": person.get("title", "Unknown"),
+        "uid": person.get("uid"),
+        "details": person.get("details", "No details available."),
+        "reward_text": person.get("reward_text", ""),
+        "image": person.get("images", [{}])[0].get("original", "/static/placeholder.jpg")
+    }
 
 @app.route("/")
 def index():
     global cached_people
+    search = request.args.get("search", "")
+
     try:
-        response = requests.get(FBI_API_URL, params={"page": 1})
-        response.raise_for_status()
-        people = response.json().get("items", [])
+        response = requests.get(FBI_API_URL)
+        data = response.json()
+        people = data.get("items", [])
 
-        wanted_list = []
-        for person in people:
-            wanted_list.append({
-                "name": person.get("title", "Unknown"),
-                "uid": person.get("uid"),
-                "details": person.get("details", "No details available."),
-                "reward_text": person.get("reward_text", ""),
-                "image": person.get("images", [{}])[0].get("original", "/static/placeholder.jpg")
-            })
+        wanted_list = [format_person(p) for p in people]
 
+        if search:
+            wanted_list = [p for p in wanted_list if search.lower() in p["name"].lower()]
+
+        wanted_list.sort(key=lambda x: x["name"])
         cached_people = wanted_list
-        return render_template("index.html", wanted=wanted_list)
-    except Exception as e:
-        return f"Error fetching FBI data: {e}", 500
+
+        return render_template("index.html", wanted=wanted_list, search_text=search)
+    except:
+        return "Sorry, something went wrong.", 500
 
 @app.route("/wanted/<uid>")
 def wanted_detail(uid):
-    person = next((p for p in cached_people if p["uid"] == uid), None)
-    if not person:
-        return "Person not found", 404
-    return render_template("detail.html", person=person)
+    for person in cached_people:
+        if person["uid"] == uid:
+            return render_template("detail.html", person=person)
+    return "Person not found.", 404
 
 if __name__ == "__main__":
     app.run(debug=True)
