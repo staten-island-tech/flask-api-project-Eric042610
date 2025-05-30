@@ -8,9 +8,9 @@ cached_people = []
 def format_person(person):
     return {
         "name": person.get("title", "Unknown"),
-        "uid": person.get("uid"),
-        "details": person.get("details", "No details available."),
-        "reward_text": person.get("reward_text", ""),
+        "uid": person.get("uid", "Unknown"),
+        "details": person.get("details", "Unknown."),
+        "reward_text": person.get("reward_text", "Unknown"),
         "image": person.get("images", [{}])[0].get("original", "/static/placeholder.jpg")
     }
 
