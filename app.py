@@ -34,14 +34,14 @@ def index():
 
         return render_template("index.html", wanted=wanted_list, search_text=search)
     except:
-        return "Sorry, something went wrong.", 500
+        return "No", 500
 
 @app.route("/wanted/<uid>")
 def wanted_detail(uid):
     for person in cached_people:
         if person["uid"] == uid:
             return render_template("detail.html", person=person)
-    return "Person not found.", 404
+    return "bigger No", 404
 
 if __name__ == "__main__":
     app.run(debug=True)
