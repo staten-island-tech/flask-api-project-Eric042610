@@ -28,6 +28,7 @@ def index():
 
         if search:
             wanted_list = [p for p in wanted_list if search.lower() in p["name"].lower()]
+            
 
         wanted_list.sort(key=lambda x: x["name"])
         cached_people = wanted_list
